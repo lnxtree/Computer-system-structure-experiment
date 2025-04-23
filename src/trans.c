@@ -37,22 +37,68 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N])
             }
         }
     } else if (M == 64 && N == 64) {
-        block_size = 4;
-        for (i = 0; i < N; i += block_size) {
-            for (j = 0; j < M; j += block_size) {
-                for (k = i; k < i + block_size; k++) {
-                    for (l = j; l < j + block_size; l++) {
-                        if (k != l) {
-                            B[l][k] = A[k][l];
-                        } else {
-                            tmp = A[k][l];
-                            diagonal = k;
-                        }
-                    }
-                    if (i == j) {
-                        B[diagonal][diagonal] = tmp;
-                    }
+        block_size = 8;
+        int tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
+        for (i = 0; i < M / 8; i++) {
+            for (j = 0; j < N / 8; j++) {
+                for (k = 0; k < 4; k++) {
+                    tmp0 = A[j * 8 + k][i * 8 + 0];
+                    tmp1 = A[j * 8 + k][i * 8 + 1];
+                    tmp2 = A[j * 8 + k][i * 8 + 2];
+                    tmp3 = A[j * 8 + k][i * 8 + 3];
+                    B[i * 8 + 0][j * 8 + k] = tmp0;
+                    B[i * 8 + 1][j * 8 + k] = tmp1;
+                    B[i * 8 + 2][j * 8 + k] = tmp2;
+                    B[i * 8 + 3][j * 8 + k] = tmp3;
                 }
+                for (k = 0; k < 4; k++) {
+                    tmp0 = A[j * 8 + k][i * 8 + 4 + 0];
+                    tmp1 = A[j * 8 + k][i * 8 + 4 + 1];
+                    tmp2 = A[j * 8 + k][i * 8 + 4 + 2];
+                    tmp3 = A[j * 8 + k][i * 8 + 4 + 3];
+                    B[i * 8 + 0][j * 8 + 4 + k] = tmp0;
+                    B[i * 8 + 1][j * 8 + 4 + k] = tmp1;
+                    B[i * 8 + 2][j * 8 + 4 + k] = tmp2;
+                    B[i * 8 + 3][j * 8 + 4 + k] = tmp3;
+                }
+                for (k = 0; k < 4; k++) {
+                    tmp0 = B[i * 8 + k][j * 8 + 4 + 0];
+                    tmp1 = B[i * 8 + k][j * 8 + 4 + 1];
+                    tmp2 = B[i * 8 + k][j * 8 + 4 + 2];
+                    tmp3 = B[i * 8 + k][j * 8 + 4 + 3];
+                    tmp4 = A[j * 8 + 4 + 0][i * 8 + k];
+                    tmp5 = A[j * 8 + 4 + 1][i * 8 + k];
+                    tmp6 = A[j * 8 + 4 + 2][i * 8 + k];
+                    tmp7 = A[j * 8 + 4 + 3][i * 8 + k];
+                    B[i * 8 + k][j * 8 + 4 + 0] = tmp4;
+                    B[i * 8 + k][j * 8 + 4 + 1] = tmp5;
+                    B[i * 8 + k][j * 8 + 4 + 2] = tmp6;
+                    B[i * 8 + k][j * 8 + 4 + 3] = tmp7;
+                    B[i * 8 + 4 + k][j * 8 + 0] = tmp0;
+                    B[i * 8 + 4 + k][j * 8 + 1] = tmp1;
+                    B[i * 8 + 4 + k][j * 8 + 2] = tmp2;
+                    B[i * 8 + 4 + k][j * 8 + 3] = tmp3;
+                }
+                for (k = 0; k < 4; k++) {
+                    tmp0 = A[j * 8 + 4 + k][i * 8 + 4 + 0];
+                    tmp1 = A[j * 8 + 4 + k][i * 8 + 4 + 1];
+                    tmp2 = A[j * 8 + 4 + k][i * 8 + 4 + 2];
+                    tmp3 = A[j * 8 + 4 + k][i * 8 + 4 + 3];
+                    B[i * 8 + 4 + 0][j * 8 + 4 + k] = tmp0;
+                    B[i * 8 + 4 + 1][j * 8 + 4 + k] = tmp1;
+                    B[i * 8 + 4 + 2][j * 8 + 4 + k] = tmp2;
+                    B[i * 8 + 4 + 3][j * 8 + 4 + k] = tmp3;
+                }
+            }
+        }
+        for (i = 0; i < N; i++) {
+            for (j = 8 * (M / 8); j < M; j++) {
+                B[j][i] = A[i][j];
+            }
+        }
+        for (i = 8 * (N / 8); i < N; i++) {
+            for (j = 0; j < 8 * (M / 8); j++) {
+                B[j][i] = A[i][j];
             }
         }
     } else {
