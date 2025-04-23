@@ -4,7 +4,7 @@ rm ./src/csim  > /dev/null 2<&1
 rm ./src/csim-ref  > /dev/null 2<&1
 rm ./src/test-csim > /dev/null 2<&1
 cd ./src  > /dev/null 2<&1
-gcc -g -Wall -Werror -std=c99 -m64 -o csim csim.c cachelab.c -lm  >/dev/null 2>&1
+gcc -g -Wall -Werror -std=c99 -m64 -o csim csim.c cachelab.c -lm  -D_POSIX_C_SOURCE=200809L >/dev/null 2>&1
 gcc -g -Wall -Werror -std=c99 -m64 -o csim-ref csim-ref.c cachelab.c -lm
 gcc -g -Wall -Werror -std=c99 -m64 -o test-csim test-csim.c >/dev/null 2>&1
 python driver.py > info 2>&1
