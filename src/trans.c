@@ -15,7 +15,66 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N])
 
 //                          请在此处添加代码
 //*************************************Begin********************************************************
+    int block_size, i, j, k, l, tmp, diagonal;
 
+    if (M == 32 && N == 32) {
+        block_size = 8;
+        for (i = 0; i < N; i += block_size) {
+            for (j = 0; j < M; j += block_size) {
+                for (k = i; k < i + block_size; k++) {
+                    for (l = j; l < j + block_size; l++) {
+                        if (k != l) {
+                            B[l][k] = A[k][l];
+                        } else {
+                            tmp = A[k][l];
+                            diagonal = k;
+                        }
+                    }
+                    if (i == j) {
+                        B[diagonal][diagonal] = tmp;
+                    }
+                }
+            }
+        }
+    } else if (M == 64 && N == 64) {
+        block_size = 4;
+        for (i = 0; i < N; i += block_size) {
+            for (j = 0; j < M; j += block_size) {
+                for (k = i; k < i + block_size; k++) {
+                    for (l = j; l < j + block_size; l++) {
+                        if (k != l) {
+                            B[l][k] = A[k][l];
+                        } else {
+                            tmp = A[k][l];
+                            diagonal = k;
+                        }
+                    }
+                    if (i == j) {
+                        B[diagonal][diagonal] = tmp;
+                    }
+                }
+            }
+        }
+    } else {
+        block_size = 16;
+        for (i = 0; i < N; i += block_size) {
+            for (j = 0; j < M; j += block_size) {
+                for (k = i; k < i + block_size && k < N; k++) {
+                    for (l = j; l < j + block_size && l < M; l++) {
+                        if (k != l) {
+                            B[l][k] = A[k][l];
+                        } else {
+                            tmp = A[k][l];
+                            diagonal = k;
+                        }
+                    }
+                    if (i == j && k < M && k < N) {
+                        B[diagonal][diagonal] = tmp;
+                    }
+                }
+            }
+        }
+    }
 
 
 
